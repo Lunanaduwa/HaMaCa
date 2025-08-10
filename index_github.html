@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Kalkulator Matriks Pink</title>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython_stdlib.js"></script>
+<style>
+    body {
+        background-color: #ffe6f0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        color: #ff4d94;
+        margin-top: 20px;
+    }
+    .container {
+        background-color: #fff0f5;
+        border: 2px solid #ffb6c1;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+    }
+    input {
+        width: 60px;
+        padding: 5px;
+        margin: 5px;
+        border: 1px solid #ffb6c1;
+        border-radius: 5px;
+        text-align: center;
+    }
+    button {
+        background-color: #ff99cc;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    button:hover {
+        background-color: #ff4d94;
+    }
+    .result {
+        background-color: #ffe6f0;
+        border: 1px solid #ffb6c1;
+        padding: 10px;
+        margin-top: 15px;
+        border-radius: 5px;
+        white-space: pre-wrap;
+    }
+</style>
+</head>
+<body onload="brython()">
+
+<h1>Kalkulator Matriks 💗</h1>
+<div class="container">
+    <p>Ukuran Matriks:</p>
+    Baris: <input id="rows" type="number" value="2" min="1"> 
+    Kolom: <input id="cols" type="number" value="2" min="1">
+    <br><br>
+    <button onclick="createMatrixInputs()">Buat Matriks</button>
+    <div id="matrixInputs"></div>
+    <br>
+    <button onclick="matrixOp('add')">Tambah</button>
+    <button onclick="matrixOp('sub')">Kurang</button>
+    <button onclick="matrixOp('mul')">Kali</button>
+    <button onclick="matrixOp('transpose')">Transpose</button>
+    <button onclick="matrixOp('determinant')">Determinan</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script type="text/python">
+from browser import document, html
+
+def createMatrixInputs(ev=None):
+    rows = int(document["rows"].value)
+    cols = int(document["cols"].value)
+    container = document["matrixInputs"]
+    container.clear()
+    container <= html.H3("Matriks A")
+    for i in range(rows):
+        for j in range(cols):
+            container <= html.INPUT(type="number", id=f"A{i}{j}", value="0", step="any")
+        container <= html.BR()
+    container <= html.H3("Matriks B")
+    for i in range(rows):
+        for j in range(cols):
+            container <= html.INPUT(type="number", id=f"B{i}{j}", value="0", step="any")
+        container <= html.BR()
+
+def getMatrix(prefix, rows, cols):
+    return [[float(document[f"{prefix}{i}{j}"].value) for j in range(cols)] for i in range(rows)]
+
+def displayMatrix(matrix):
+    return "\n".join(["\t".join(map(str, row)) for row in matrix])
+
+def determinant(matrix):
+    if len(matrix) != len(matrix[0]):
+        return "Bukan matriks persegi"
+    n = len(matrix)
+    if n == 1:
+        return matrix[0][0]
+    if n == 2:
+        return matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]
+    det = 0
+    for c in range(n):
+        minor = [row[:c] + row[c+1:] for row in (matrix[1:])]
+        det += ((-1)**c) * matrix[0][c] * determinant(minor)
+    return det
+
+def matrixOp(op):
+    rows = int(document["rows"].value)
+    cols = int(document["cols"].value)
+    A = getMatrix("A", rows, cols)
+    B = getMatrix("B", rows, cols)
+    if op == "add":
+        res = [[A[i][j] + B[i][j] for j in range(cols)] for i in range(rows)]
+        document["result"].text = "Hasil Penjumlahan:\n" + displayMatrix(res)
+    elif op == "sub":
+        res = [[A[i][j] - B[i][j] for j in range(cols)] for i in range(rows)]
+        document["result"].text = "Hasil Pengurangan:\n" + displayMatrix(res)
+    elif op == "mul":
+        if cols != len(B):
+            document["result"].text = "Ukuran matriks tidak sesuai untuk perkalian"
+            return
+        res = [[sum(A[i][k] * B[k][j] for k in range(cols)) for j in range(len(B[0]))] for i in range(rows)]
+        document["result"].text = "Hasil Perkalian:\n" + displayMatrix(res)
+    elif op == "transpose":
+        res = [[A[j][i] for j in range(rows)] for i in range(cols)]
+        document["result"].text = "Transpose Matriks A:\n" + displayMatrix(res)
+    elif op == "determinant":
+        document["result"].text = "Determinan Matriks A: " + str(determinant(A))
+
+createMatrixInputs()
+</script>
+
+</body>
+</html>
